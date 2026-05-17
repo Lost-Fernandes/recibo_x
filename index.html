@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo - Cachaça da Xepa</title>
+
+    <!-- Biblioteca PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #ececec;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .topo {
+            background: #111;
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .topo h1 {
+            color: #f5c542;
+            font-size: 35px;
+            margin-bottom: 10px;
+        }
+
+        .formulario {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .grupo {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .gerar {
+            background: #1e8e3e;
+            color: white;
+        }
+
+        .pdf {
+            background: #d93025;
+            color: white;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+        }
+
+        /* RECIBO */
+
+        #reciboPDF {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .recibo {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid #000;
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .lado-esquerdo {
+            flex: 1;
+            min-width: 300px;
+            padding: 35px;
+        }
+
+        .lado-direito {
+            width: 250px;
+            background: #fafafa;
+            border-left: 2px dashed #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .lado-direito img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+        }
+
+        .titulo-recibo {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #111;
+        }
+
+        .linha {
+            margin-bottom: 20px;
+            font-size: 19px;
+        }
+
+        .linha span {
+            font-weight: bold;
+        }
+
+        .rodape {
+            margin-top: 30px;
+            color: #666;
+            font-size: 15px;
+        }
+
+        .assinatura {
+            margin-top: 70px;
+            width: 250px;
+            text-align: center;
+            padding-top: 8px;
+            font-weight: bold;
+        }
+
+        @media(max-width:700px) {
+
+            .recibo {
+                flex-direction: column;
+            }
+
+            .lado-direito {
+                width: 100%;
+                border-left: none;
+                border-top: 2px dashed #999;
+            }
+
+            .titulo-recibo {
+                font-size: 25px;
+            }
+
+            .linha {
+                font-size: 17px;
+            }
+
+        }
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+            .container {
+                width: 100%;
+            }
+
+            .recibo {
+                page-break-inside: avoid;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="topo">
+            <h1>Cachaça da Xepa</h1>
+            <p>Gerador de Recibo de Venda</p>
+        </div>
+
+        <!-- FORMULÁRIO -->
+
+        <div class="formulario">
+
+            <div class="grupo">
+                <label>Nome do Cliente</label>
+                <input type="text" id="nome" placeholder="Digite o nome do cliente">
+            </div>
+
+            <div class="grupo">
+                <label>Produto</label>
+                <input type="text" id="produto" placeholder="Ex: Cachaça da Xepa">
+            </div>
+
+            <div class="grupo">
+                <label>Valor (R$)</label>
+                <input type="number" id="valor" placeholder="Digite o valor">
+            </div>
+
+            <div class="grupo">
+                <label>Data</label>
+                <input type="date" id="data">
+            </div>
+
+            <div class="btns">
+
+                <button class="gerar" onclick="gerarRecibo()">
+                    Gerar Recibo
+                </button>
+
+                <button class="pdf" onclick="baixarPDF()">
+                    Baixar PDF
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- RECIBO -->
+
+        <div id="reciboPDF">
+
+            <div class="recibo">
+
+                <!-- ESQUERDA -->
+
+                <div class="lado-esquerdo">
+
+                    <div class="titulo-recibo">
+                        RECIBO DE VENDA
+                    </div>
+
+                    <div class="linha">
+                        <span>Cliente:</span>
+                        <div id="mostrarNome">---</div>
+                    </div>
+
+                    <div class="linha">
+                        <span>Produto:</span>
+                        <div id="mostrarProduto">---</div>
+                    </div>
+
+                    <div class="linha">
+                        <span>Valor:</span>
+                        <div id="mostrarValor">R$ 0,00</div>
+                    </div>
+
+                    <div class="linha">
+                        <span>Data:</span>
+                        <div id="mostrarData">--/--/----</div>
+                    </div>
+
+                    <div class="rodape">
+                        Declaro ter recebido o produto, CACHAÇA DA XEPA e, pago o valor informado acima.
+                    </div>
+
+                    <div class="assinatura">
+                        Vendedor: Pascoal Fernandes Costa
+                    </div>
+
+                </div>
+
+                <!-- DIREITA -->
+
+                <div class="lado-direito">
+
+                    <!-- QR CODE FIXO -->
+
+                    <img id="imagemQR" src="qrcod.jpg">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        function gerarRecibo() {
+
+            const nome = document.getElementById("nome").value;
+            const produto = document.getElementById("produto").value;
+            const valor = document.getElementById("valor").value;
+            const data = document.getElementById("data").value;
+
+            document.getElementById("mostrarNome").innerText =
+                nome || "---";
+
+            document.getElementById("mostrarProduto").innerText =
+                produto || "---";
+
+            document.getElementById("mostrarValor").innerText =
+                "R$ " + Number(valor || 0).toFixed(2).replace(".", ",");
+
+            if (data) {
+
+                const partes = data.split("-");
+
+                document.getElementById("mostrarData").innerText =
+                    partes[2] + "/" + partes[1] + "/" + partes[0];
+
+            }
+
+        }
+
+        // GERAR PDF CORRIGIDO
+
+        function baixarPDF() {
+
+            const elemento = document.getElementById("reciboPDF");
+
+            // Ajusta tamanho antes de gerar
+            elemento.style.width = "800px";
+            elemento.style.margin = "0 auto";
+
+            const opcoes = {
+
+                margin: 0.2,
+
+                filename: 'recibo-cachaca-xepa.pdf',
+
+                image: {
+                    type: 'jpeg',
+                    quality: 1
+                },
+
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0
+                },
+
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+
+                pagebreak: {
+                    mode: ['avoid-all']
+                }
+
+            };
+
+            html2pdf()
+                .set(opcoes)
+                .from(elemento)
+                .save()
+                .then(() => {
+
+                    // Volta ao normal depois do PDF
+                    elemento.style.width = "100%";
+
+                });
+
+        }
+
+    </script>
+
+</body>
+
+</html>
